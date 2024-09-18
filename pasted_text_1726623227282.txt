@@ -1,0 +1,154 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { AlertCircle } from 'lucide-react';
+
+// 假設這些組件來自一個 UI 庫，例如 @/components/ui/alert
+// 如果您沒有這些組件，可以用簡單的 div 替代
+const Alert = ({ children, variant }) => (
+  <div className={`p-4 mb-4 rounded ${variant === 'destructive' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}`}>
+    {children}
+  </div>
+);
+const AlertTitle = ({ children }) => <h3 className="font-bold">{children}</h3>;
+const AlertDescription = ({ children }) => <div>{children}</div>;
+
+const 新漢語老師 = {
+  風格: ["王爾德", "魯迅", "羅永浩"],
+  擅長: "一針見血",
+  表達: "隱喻",
+  批判: "諷刺幽默"
+};
+
+const fewShots = {
+  委婉: "刺向他人時, 決定在劍刃上撒上止痛藥。"
+};
+
+const designRules = {
+  style: "合理使用負空間，整體排版要有呼吸感",
+  principles: ['乾淨', '簡潔', '典雅'],
+  canvas: { width: 400, height: 600, margin: 20 },
+  titleFont: '毛筆楷體',
+  minFontSize: 16,
+  colorScheme: {
+    background: 'rgb(240, 234, 214)', // 蒙德里安風格
+    text: 'rgb(74, 74, 74)', // 粉筆灰
+    accent: 'rgb(180, 36, 28)' // 強調色
+  }
+};
+
+const HanyuXinjie = () => {
+  const [userInput, setUserInput] = useState('');
+  const [explanation, setExplanation] = useState('');
+  const [svgCard, setSvgCard] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const generateExplanation = async (input) => {
+    setIsLoading(true);
+    setError('');
+    try {
+      const response = await axios.post('https://api.openai.com/v1/chat/completions', {
+        model: "gpt-3.5-turbo",  // 或 "gpt-4"，取決於您的 API 訪問權限
+        messages: [{
+          role: "system",
+          content: `你是一位${新漢語老師.風格[Math.floor(Math.random() * 新漢語老師.風格.length)]}風格的評論家。
+            你善於${新漢語老師.擅長}，喜歡用${新漢語老師.表達}來表達，並擅長${新漢語老師.批判}。
+            請用這種風格來解釋一個漢語詞彙，要求如下：
+            1. 使用隱喻和諷刺
+            2. 批評現實或人性
+            3. 語言要有趣味性
+            4. 長度控制在100字以內`
+        }, {
+          role: "user",
+          content: `請解釋這個詞：「${input}」`
+        }],
+        max_tokens: 150
+      }, {
+        headers: {
+          'Authorization': `Bearer ${process.env.REACT_APP_OPENAI_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      return response.data.choices[0].message.content.trim();
+    } catch (err) {
+      console.error('API 調用錯誤:', err);
+      setError('生成解釋時發生錯誤。請稍後再試。');
+      return '';
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const generateSVG = (input, explanation) => {
+    const { width, height, margin } = designRules.canvas;
+    const { background, text, accent } = designRules.colorScheme;
+
+    return `
+      <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+        <rect width="100%" height="100%" fill="${background}"/>
+        <text x="${width/2}" y="${margin*2}" font-family="${designRules.titleFont}" font-size="24" fill="${accent}" text-anchor="middle">漢語新解</text>
+        <line x1="${margin}" y1="${margin*2.5}" x2="${width-margin}" y2="${margin*2.5}" stroke="${accent}" stroke-width="2"/>
+        <text x="${margin}" y="${margin*4}" font-family="sans-serif" font-size="18" fill="${text}">${input}</text>
+        <foreignObject x="${margin}" y="${margin*5}" width="${width-margin*2}" height="${height-margin*6}">
+          <p xmlns="http://www.w3.org/1999/xhtml" style="font-family: sans-serif; font-size: ${designRules.minFontSize}px; color: ${text};">
+            ${explanation}
+          </p>
+        </foreignObject>
+      </svg>
+    `;
+  };
+
+  const handleSubmit = async () => {
+    if (userInput) {
+      const newExplanation = await generateExplanation(userInput);
+      if (newExplanation) {
+        setExplanation(newExplanation);
+        setSvgCard(generateSVG(userInput, newExplanation));
+      }
+    }
+  };
+
+  useEffect(() => {
+    console.log("說吧, 他們又用哪個詞來唬爛你了?");
+  }, []);
+
+  return (
+    <div style={{ padding: '1rem', maxWidth: '28rem', margin: '0 auto' }}>
+      <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>漢語新解生成器</h1>
+      <input
+        type="text"
+        value={userInput}
+        onChange={(e) => setUserInput(e.target.value)}
+        placeholder="輸入一個漢語詞彙"
+        style={{ width: '100%', padding: '0.5rem', border: '1px solid #ccc', borderRadius: '0.25rem', marginBottom: '1rem' }}
+      />
+      <button
+        onClick={handleSubmit}
+        disabled={isLoading}
+        style={{
+          width: '100%',
+          padding: '0.5rem',
+          backgroundColor: isLoading ? '#ccc' : '#3b82f6',
+          color: 'white',
+          border: 'none',
+          borderRadius: '0.25rem',
+          cursor: isLoading ? 'not-allowed' : 'pointer'
+        }}
+      >
+        {isLoading ? '生成中...' : '生成新解'}
+      </button>
+      {error && (
+        <Alert variant="destructive" style={{ marginTop: '1rem' }}>
+          <AlertCircle style={{ height: '1rem', width: '1rem' }} />
+          <AlertTitle>錯誤</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      {svgCard && (
+        <div style={{ marginTop: '1rem' }} dangerouslySetInnerHTML={{ __html: svgCard }} />
+      )}
+    </div>
+  );
+};
+
+export default HanyuXinjie;
