@@ -1,16 +1,10 @@
 const firebaseConfig = {
-    apiKey: "AIzaSyC3S1ERsvbJ2AxyNea1AF7_FzkLUmWO_Ng
-",
-    authDomain: "teacher-c571b.firebaseapp.com
-",
-    projectId: "teacher-c571b
-",
-    storageBucket: "teacher-c571b.firebasestorage.app
-",
-    messagingSenderId: "82691545657
-",
-    appId: "1:82691545657:web:fceb4a86812691bc958be8
-"
+    apiKey: "AIzaSyC3S1ERsvbJ2AxyNea1AF7_FzkLUmWO_Ng",
+    authDomain: "teacher-c571b.firebaseapp.com",
+    projectId: "teacher-c571b",
+    storageBucket: "teacher-c571b.firebasestorage.app",
+    messagingSenderId: "82691545657",
+    appId: "1:82691545657:web:fceb4a86812691bc958be8"
 };
 
 const app = firebase.initializeApp(firebaseConfig);
@@ -212,12 +206,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Firebase Functions URL placeholder for injection
-    let API_URL = "https://asia-east1-teacher-c571b.cloudfunctions.net/generateExplanation
-";
+    let API_URL = "https://asia-east1-teacher-c571b.cloudfunctions.net/generateExplanation";
 
     // Prevent relative path issues on GitHub Pages
-    if (API_URL === "https://asia-east1-teacher-c571b.cloudfunctions.net/generateExplanation
-" || API_URL.startsWith('/api')) {
+    if (API_URL === "https://asia-east1-teacher-c571b.cloudfunctions.net/generateExplanation" || API_URL.startsWith('/api')) {
         API_URL = "https://asia-east1-teacher-c571b.cloudfunctions.net/generateExplanation";
     }
 
