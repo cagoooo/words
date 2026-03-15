@@ -1,0 +1,548 @@
+:root {
+    --paper-bg: #FCF9F2;
+    /* 宣紙色 */
+    --ink-black: #1A1A1A;
+    /* 濃墨 */
+    --ink-gray: #555555;
+    /* 淡墨 */
+    --seal-red: #C8102E;
+    /* 硃砂紅 */
+    --border-color: #D1CEC7;
+    --text-main: #2C2C2C;
+    --text-muted: #6B6B6B;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Serif TC', serif;
+    background-color: var(--paper-bg);
+    background-image: url('../rice_paper_texture.png');
+    background-blend-mode: multiply;
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-x: hidden;
+    padding: 20px;
+}
+
+.container-vertical {
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.background-blobs {
+    display: none;
+}
+
+.blob {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+    filter: blur(120px);
+    border-radius: 50%;
+    opacity: 0.4;
+    animation: move 25s infinite alternate;
+}
+
+.blob-1 {
+    top: -200px;
+    left: -200px;
+    animation-delay: 0s;
+}
+
+.blob-2 {
+    bottom: -250px;
+    right: -200px;
+    background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+    animation-delay: -7s;
+}
+
+.blob-3 {
+    top: 35%;
+    left: 45%;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--secondary) 100%);
+    width: 500px;
+    height: 500px;
+    animation-delay: -14s;
+}
+
+@keyframes move {
+    from {
+        transform: translate(0, 0) scale(1);
+    }
+
+    to {
+        transform: translate(100px, 100px) scale(1.2);
+    }
+}
+
+/* Glass Container */
+.glass-container {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    /* 古典簡潔排版 */
+    padding: 60px 50px;
+    width: 100%;
+    max-width: 700px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    text-align: left;
+    /* 改為左對齊，符合書法感 */
+    position: relative;
+    z-index: 10;
+    background-image: url('../ink_splash.png');
+    background-repeat: no-repeat;
+    background-position: bottom right;
+    background-size: 150px;
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    border-bottom: 2px solid var(--seal-red);
+}
+
+.premium-title {
+    font-size: 3.5rem;
+    font-family: 'Noto Serif TC', serif;
+    color: var(--ink-black);
+    letter-spacing: 2px;
+    display: inline-block;
+}
+
+.icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--ink-gray);
+    cursor: pointer;
+    padding: 8px;
+    transition: color 0.3s, transform 0.3s;
+    display: flex;
+    align-items: center;
+}
+
+.icon-btn:hover {
+    color: var(--seal-red);
+    transform: scale(1.1);
+}
+
+.header-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.subtitle {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    margin-bottom: 40px;
+}
+
+/* Input Section */
+.input-wrapper {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+#input-word {
+    width: 100%;
+    padding: 15px 0;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--ink-black);
+    border-radius: 0;
+    font-size: 1.25rem;
+    color: var(--ink-black);
+    outline: none;
+    transition: all 0.3s;
+}
+
+#input-word:focus {
+    border-bottom-width: 2px;
+    letter-spacing: 1px;
+}
+
+.premium-btn {
+    position: relative;
+    width: 100%;
+    margin-top: 30px;
+    padding: 15px;
+    background: var(--ink-black);
+    color: white;
+    border: none;
+    border-radius: 2px;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+    letter-spacing: 4px;
+}
+
+.premium-btn:hover {
+    background: var(--ink-gray);
+    transform: none;
+    box-shadow: none;
+}
+
+.premium-btn:disabled {
+    opacity: 0.7;
+    cursor: wait;
+    transform: none;
+}
+
+.btn-shine {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: all 0.6s;
+}
+
+.premium-btn:hover .btn-shine {
+    left: 100%;
+}
+
+.error-msg {
+    color: var(--accent);
+    margin-top: 12px;
+    font-size: 0.9rem;
+    min-height: 1.2rem;
+}
+
+/* Traditional Scroll Layout */
+.bento-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    margin-top: 50px;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 1s ease;
+}
+
+.bento-grid.active {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.bento-block {
+    background: transparent;
+    border: none;
+    padding: 0;
+    backdrop-filter: none;
+    border-left: 1px solid var(--border-color);
+    padding-left: 20px;
+}
+
+.main-explanation {
+    border-left: 3px solid var(--ink-black);
+}
+
+.satire-box {
+    color: var(--ink-gray);
+    font-style: italic;
+}
+
+/* Red Seal (印章) */
+.seal {
+    width: 70px;
+    /* 稍微縮小，避免過度遮擋 */
+    height: 70px;
+    border: 3px solid var(--seal-red);
+    color: var(--seal-red);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 900;
+    font-size: 1rem;
+    padding: 5px;
+    text-align: center;
+    line-height: 1.2;
+    transform: rotate(-10deg);
+    opacity: 0;
+    position: absolute;
+    bottom: 25px;
+    right: 25px;
+    user-select: none;
+    z-index: 15;
+    /* 高於內容，低於功能按鈕 */
+}
+
+.seal.stamped {
+    animation: stampRotate 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes stampRotate {
+    0% {
+        transform: scale(3) rotate(0deg);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1) rotate(-10deg);
+        opacity: 0.8;
+    }
+}
+
+/* Atmospheric Enhancements */
+.procedural-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.4;
+}
+
+.bg-element {
+    position: absolute;
+    filter: grayscale(1) contrast(1.2);
+    opacity: 0;
+    transition: opacity 3s ease, transform 3s ease;
+}
+
+.bg-element.active {
+    opacity: 0.6;
+}
+
+/* Ink Spread Animation Class */
+.ink-spread {
+    opacity: 0;
+    animation: inkReveal 2s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+}
+
+@keyframes inkReveal {
+    0% {
+        opacity: 0;
+        filter: url(#ink-spread-filter) blur(8px);
+        transform: scale(0.98) translateY(5px);
+    }
+
+    50% {
+        opacity: 0.8;
+        filter: url(#ink-spread-filter) blur(4px);
+    }
+
+    100% {
+        opacity: 1;
+        filter: url(#ink-spread-filter) blur(0);
+        transform: scale(1) translateY(0);
+    }
+}
+
+
+footer {
+    margin-top: 40px;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+/* Animations */
+.fade-in {
+    animation: fadeIn 0.8s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Modal & Sidebar */
+.modal,
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s;
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.active,
+.sidebar.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: var(--paper-bg);
+    background-image: url('../rice_paper_texture.png');
+    padding: 40px;
+    border: 2px solid var(--ink-black);
+    max-width: 400px;
+    width: 90%;
+    position: relative;
+    box-shadow: 20px 20px 0 rgba(0, 0, 0, 0.1);
+}
+
+.sidebar {
+    justify-content: flex-end;
+}
+
+.sidebar-content {
+    background: var(--paper-bg);
+    background-image: url('../rice_paper_texture.png');
+    width: 100%;
+    max-width: 350px;
+    height: 100%;
+    border-left: 2px solid var(--ink-black);
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.sidebar.active .sidebar-content {
+    transform: translateX(0);
+}
+
+.sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--seal-red);
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.sidebar-content .sidebar-list {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.history-item {
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.history-item:hover {
+    background: rgba(200, 16, 46, 0.05);
+}
+
+.history-item .word {
+    font-weight: 700;
+    color: var(--seal-red);
+    margin-bottom: 5px;
+}
+
+.history-item .time {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.sidebar-footer {
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+}
+
+.text-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 0.9rem;
+}
+
+.text-btn:hover {
+    color: var(--seal-red);
+}
+
+/* Share FAB */
+.share-fab {
+    position: absolute;
+    bottom: 30px;
+    right: 110px;
+    /* 向左偏移，避開印章 (25+70=95, 110 gives safety) */
+    background: var(--paper-bg) !important;
+    border: 2px solid var(--ink-black) !important;
+    /* 加粗邊框使其更顯眼 */
+    color: var(--ink-black) !important;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.1);
+    /* 使用硬陰影符合水墨感 */
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.5s ease;
+    pointer-events: none;
+    z-index: 20;
+    /* 確保在最上層 */
+}
+
+.share-fab:hover {
+    background: var(--ink-black) !important;
+    color: white !important;
+    transform: translateY(-2px) !important;
+}
+
+.bento-grid.active .share-fab {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.setting-item {
+    margin-bottom: 15px;
+}
+
+.setting-item label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+.setting-item input,
+.setting-item select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    font-family: inherit;
+}
+
+/* RWD */
+@media (max-width: 480px) {
+    .glass-container {
+        padding: 24px;
+    }
+
+    .premium-title {
+        font-size: 2rem;
+    }
+}

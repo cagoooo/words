@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>漢語新解 | 揭露真相的字典</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <!-- Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@700&family=Ma+Shan+Zheng&family=Outfit:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#C8102E">
+    <!-- html2canvas for social sharing -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+</head>
+
+<body>
+
+
+    <!-- Procedural Background Elements -->
+    <div id="procedural-bg" class="procedural-bg"></div>
+
+    <!-- Audio Elements -->
+    <audio id="bgm" loop src="./audio/bgm.mp3"></audio>
+    <audio id="sfx-stamp" src="./audio/stamp.mp3"></audio>
+
+    <div class="container container-vertical">
+        <main class="glass-container fade-in">
+            <header>
+                <div class="header-top">
+                    <h1 class="premium-title">漢語新解</h1>
+                    <div class="header-actions">
+                        <button id="history-btn" class="icon-btn" title="歷史長卷">
+                            <svg viewBox="0 0 24 24" width="24" height="24">
+                                <path fill="currentColor"
+                                    d="M13.5,8H12V13L16.28,15.54L17,14.33L13.5,12.25V8M13,3A9,9 0 0,0 4,12H1L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.22 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3Z" />
+                            </svg>
+                        </button>
+                        <button id="settings-btn" class="icon-btn" title="印章設定">
+                            <svg viewBox="0 0 24 24" width="24" height="24">
+                                <path fill="currentColor"
+                                    d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.35 19.43,11.03L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.97 19.05,5.05L16.56,6.05C16.04,5.66 15.47,5.34 14.86,5.12L14.47,2.47C14.44,2.23 14.24,2.05 14,2.05H10C9.76,2.05 9.56,2.23 9.53,2.47L9.14,5.12C8.53,5.34 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.97 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11.03C4.53,11.35 4.5,11.67 4.5,12C4.5,11.67 4.47,11.35 4.43,11.03L2.32,12.69C2.13,12.84 2.08,13.11 2.2,13.33L4.2,16.79C4.32,17.01 4.59,17.09 4.81,17.01L7.3,16.01C7.82,16.4 8.39,16.72 9,16.94L9.39,19.59C9.42,19.83 9.62,20.01 9.86,20.01H13.86C14.1,20.01 14.3,19.83 14.33,19.59L14.72,16.94C15.33,16.72 15.9,16.4 16.42,16.01L18.91,17.01C19.13,17.09 19.4,17.01 19.52,16.79L21.52,13.33C21.64,13.11 21.59,12.84 21.4,12.69L19.29,11.03C19.33,10.71 19.36,10.39 19.36,10.06C19.36,9.73 19.33,9.41 19.29,9.09L21.4,7.43C21.59,7.28 21.64,7.01 21.52,6.79L19.52,3.33C19.4,3.11 19.13,3.03 18.91,3.11L16.42,4.11C15.9,3.72 15.33,3.4 14.72,3.18L14.33,0.53C14.3,0.29 14.1,0.11 13.86,0.11H9.86C9.62,0.11 9.42,0.29 9.39,0.53L9,3.18C8.39,3.4 7.82,3.72 7.3,4.11L4.81,3.11C4.59,3.03 4.32,3.11 4.2,3.33L2.2,6.79C2.08,7.01 2.13,7.28 2.32,7.43L4.43,9.09C4.39,9.41 4.36,9.73 4.36,10.06C4.36,10.39 4.39,10.71 4.43,11.03L2.32,12.69Z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <p class="subtitle">批判現實，思考深刻，語言風趣</p>
+            </header>
+
+            <section class="input-section">
+                <div class="input-wrapper">
+                    <input type="text" id="input-word" placeholder="輸入一個詞彙，看穿這世界的假象..." required>
+                    <div class="input-glow"></div>
+                </div>
+                <button id="generate-btn" class="premium-btn">
+                    <span class="btn-text">揭露真相</span>
+                    <div class="btn-shine"></div>
+                </button>
+                <div id="error" class="error-msg"></div>
+            </section>
+
+            <section id="result-container" class="bento-grid">
+                <!-- Bento blocks will be injected here -->
+                <div id="block-main" class="bento-block main-explanation"></div>
+                <div id="block-satire" class="bento-block satire-box"></div>
+                <div id="block-meta" class="bento-block meta-info"></div>
+                <button id="share-btn" class="icon-btn share-fab" title="輸出畫卷">
+                    <svg viewBox="0 0 24 24" width="24" height="24">
+                        <path fill="currentColor"
+                            d="M18,16.08C17.24,16.08 16.56,16.38 16.04,16.85L8.91,12.7C8.96,12.47 9,12.24 9,12C9,11.76 8.96,11.53 8.91,11.3L15.96,7.19C16.5,7.69 17.21,8 18,8A3,3 0 0,0 21,5A3,3 0 0,0 18,2A3,3 0 0,0 15,5C15,5.24 15.04,5.47 15.09,5.7L8.04,9.81C7.5,9.31 6.79,9 6,9A3,3 0 0,0 3,12A3,3 0 0,0 6,15C6.79,15 7.5,14.69 8.04,14.19L15.16,18.35C15.11,18.53 15.08,18.73 15.08,18.92A3,3 0 0,0 18.08,21.92A3,3 0 0,0 21.08,18.92A3,3 0 0,0 18.08,15.92C17.21,15.92 16.5,16.23 15.96,16.73L8.91,12.6C8.96,12.37 9,12.14 9,11.91C9,11.68 8.96,11.45 8.91,11.22L15.96,8.59M18,4A2,2 0 0,0 16,6A2,2 0 0,0 18,8A2,2 0 0,0 20,6A2,2 0 0,0 18,4M6,10A2,2 0 0,0 4,12A2,2 0 0,0 6,14A2,2 0 0,0 8,12A2,2 0 0,0 6,10M18,16A2,2 0 0,0 16,18A2,2 0 0,0 18,20A2,2 0 0,0 20,18A2,2 0 0,0 18,16Z" />
+                    </svg>
+                </button>
+            </section>
+
+            <footer>
+                <p>© 2026 漢語新解 · Powered by 阿凱老師</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- SVG Ink Spreading Filter -->
+    <svg style="position: absolute; width: 0; height: 0;" aria-hidden="true" focusable="false">
+        <defs>
+            <filter id="ink-spread-filter" x="-20%" y="-20%" width="140%" height="140%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="4" result="noise" />
+                <feDisplacementMap in="SourceGraphic" in2="noise" scale="20" result="displaced" />
+                <feGaussianBlur in="displaced" stdDeviation="2" result="blurred" />
+                <feComponentTransfer in="blurred" result="ink">
+                    <feFuncA type="discrete" tableValues="0 0 0 1 1" />
+                </feComponentTransfer>
+                <feMerge>
+                    <feMergeNode in="ink" />
+                    <feMergeNode in="SourceGraphic" />
+                </feMerge>
+            </filter>
+        </defs>
+    </svg>
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 20px; color: var(--ink-black);">印章設定</h2>
+            <div class="setting-item">
+                <label for="seal-name">印章文字 (2-4 字):</label>
+                <input type="text" id="seal-name" maxlength="4" placeholder="例如：漢語新解">
+            </div>
+            <div class="setting-item">
+                <label for="seal-font">選擇字體:</label>
+                <select id="seal-font">
+                    <option value="'Noto Serif TC', serif">標楷體 (Noto Serif)</option>
+                    <option value="'Ma Shan Zheng', cursive">毛筆大氣 (Ma Shan Zheng)</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button id="save-settings" class="premium-btn" style="margin-top: 20px;">儲存設定</button>
+            </div>
+        </div>
+    </div>
+    <!-- History Sidebar -->
+    <div id="history-sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <h2>歷史回響</h2>
+            <button id="close-history" class="icon-btn">&times;</button>
+        </div>
+        <div id="history-list" class="sidebar-content">
+            <!-- History items will be injected here -->
+        </div>
+        <div class="sidebar-footer">
+            <button id="clear-history" class="text-btn">清空長卷</button>
+        </div>
+    </div>
+
+    <script src="js/app_v3.js"></script>
+    <script>
+        // Service Worker Registration with Dev Isolation
+        if ('serviceWorker' in navigator) {
+            const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
+            if (isLocal) {
+                // 開發環境：主動解除註冊所有 Service Worker，避免快取衝突
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                    for (const registration of registrations) {
+                        registration.unregister();
+                        console.log('✅ [Dev] Service Worker unregistered');
+                    }
+                });
+            } else {
+                // 正式環境：正常註冊
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('./sw.js')
+                        .then(reg => console.log('✅ Service Worker registered:', reg.scope))
+                        .catch(err => console.error('❌ Service Worker registration failed:', err));
+                });
+            }
+        }
+    </script>
+</body>
+
+</html>
