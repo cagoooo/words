@@ -1,10 +1,10 @@
 const firebaseConfig = {
-    apiKey: "AIzaSyDI5Uf3zGgWqCqa4mW6hqETcgabvx817oM",
-    authDomain: "basketball-5c271.firebaseapp.com",
-    projectId: "basketball-5c271",
-    storageBucket: "basketball-5c271.firebasestorage.app",
-    messagingSenderId: "399504339324",
-    appId: "1:399504339324:web:26b82606e3cfca47b734f9"
+    apiKey: "__VITE_FIREBASE_API_KEY__",
+    authDomain: "__VITE_FIREBASE_AUTH_DOMAIN__",
+    projectId: "__VITE_FIREBASE_PROJECT_ID__",
+    storageBucket: "__VITE_FIREBASE_STORAGE_BUCKET__",
+    messagingSenderId: "__VITE_FIREBASE_MESSAGING_SENDER_ID__",
+    appId: "__VITE_FIREBASE_APP_ID__"
 };
 
 const app = firebase.initializeApp(firebaseConfig);
@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Firebase Functions URL placeholder for injection
-    const API_URL = '/api/generateExplanation';
+    const API_URL = "__VITE_GEMINI_API_URL__";
 
     async function generateExplanation(word) {
         const currentUser = auth.currentUser;

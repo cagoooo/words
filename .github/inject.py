@@ -4,7 +4,8 @@ import re
 def inject_secrets():
     # Targeted files
     files_to_process = [
-        'static/js/app_v3.js'
+        'static/js/app_v3.js',
+        'static/js/app.js'
     ]
     
     # Environment variables to inject
