@@ -24,7 +24,7 @@ def inject_secrets():
         '__VITE_FIREBASE_STORAGE_BUCKET__': os.environ.get('VITE_FIREBASE_STORAGE_BUCKET', ''),
         '__VITE_FIREBASE_MESSAGING_SENDER_ID__': os.environ.get('VITE_FIREBASE_MESSAGING_SENDER_ID', ''),
         '__VITE_FIREBASE_APP_ID__': os.environ.get('VITE_FIREBASE_APP_ID', ''),
-        '__VITE_GEMINI_API_URL__': os.environ.get('VITE_GEMINI_API_URL', 'https://asia-east1-basketball-5c271.cloudfunctions.net/generateExplanation')
+        '__VITE_GEMINI_API_URL__': os.environ.get('VITE_GEMINI_API_URL', 'https://asia-east1-teacher-c571b.cloudfunctions.net/generateExplanation')
     }
 
     for file_path in files_to_process:
