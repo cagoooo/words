@@ -28,4 +28,4 @@
 
 ## 🛠️ 目前版本：v3.4.2
 **狀態**：穩定運行中
-**主要入口**：[漢語新解 | 揭露真相的字典](https://cagoooo.github.io)
+**主要入口**：[漢語新解 | 揭露真相的字典](https://cagoooo.github.io/words)
