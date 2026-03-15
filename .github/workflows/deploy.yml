@@ -46,6 +46,10 @@ jobs:
               print('✅ 無殘留 API Key')
           "
 
+      - name: Install Functions Dependencies 📦
+        run: npm install
+        working-directory: functions
+
       - name: Deploy to Firebase 🚀
         uses: w9jds/firebase-action@master
         with:
