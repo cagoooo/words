@@ -206,7 +206,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Firebase Functions URL placeholder for injection
-    const API_URL = "/api/generateExplanation";
+    let API_URL = "/api/generateExplanation";
+
+    // Prevent relative path issues on GitHub Pages
+    if (API_URL === "/api/generateExplanation" || API_URL.startsWith('/api')) {
+        API_URL = "https://asia-east1-teacher-c571b.cloudfunctions.net/generateExplanation";
+    }
 
     async function generateExplanation(word) {
         const currentUser = auth.currentUser;
