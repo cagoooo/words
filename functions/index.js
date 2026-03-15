@@ -27,8 +27,10 @@ Example:
   "mood": "neutral"
 }`;
 
+const cors = ["https://cagoooo.github.io"];
+
 exports.generateExplanation = onRequest({
-    cors: true,
+    cors: cors,
     secrets: ["GEMINI_API_KEY"]
 }, async (req, res) => {
     // Check for POST method
