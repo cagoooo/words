@@ -18,13 +18,13 @@ def inject_secrets():
                     os.environ[key] = value
 
     replacements = {
-        '__VITE_FIREBASE_API_KEY__': os.environ.get('VITE_FIREBASE_API_KEY', ''),
-        '__VITE_FIREBASE_AUTH_DOMAIN__': os.environ.get('VITE_FIREBASE_AUTH_DOMAIN', ''),
-        '__VITE_FIREBASE_PROJECT_ID__': os.environ.get('VITE_FIREBASE_PROJECT_ID', ''),
-        '__VITE_FIREBASE_STORAGE_BUCKET__': os.environ.get('VITE_FIREBASE_STORAGE_BUCKET', ''),
-        '__VITE_FIREBASE_MESSAGING_SENDER_ID__': os.environ.get('VITE_FIREBASE_MESSAGING_SENDER_ID', ''),
-        '__VITE_FIREBASE_APP_ID__': os.environ.get('VITE_FIREBASE_APP_ID', ''),
-        '__VITE_GEMINI_API_URL__': os.environ.get('VITE_GEMINI_API_URL', 'https://asia-east1-teacher-c571b.cloudfunctions.net/generateExplanation')
+        '__VITE_FIREBASE_API_KEY__': os.environ.get('VITE_FIREBASE_API_KEY', '').strip(),
+        '__VITE_FIREBASE_AUTH_DOMAIN__': os.environ.get('VITE_FIREBASE_AUTH_DOMAIN', '').strip(),
+        '__VITE_FIREBASE_PROJECT_ID__': os.environ.get('VITE_FIREBASE_PROJECT_ID', '').strip(),
+        '__VITE_FIREBASE_STORAGE_BUCKET__': os.environ.get('VITE_FIREBASE_STORAGE_BUCKET', '').strip(),
+        '__VITE_FIREBASE_MESSAGING_SENDER_ID__': os.environ.get('VITE_FIREBASE_MESSAGING_SENDER_ID', '').strip(),
+        '__VITE_FIREBASE_APP_ID__': os.environ.get('VITE_FIREBASE_APP_ID', '').strip(),
+        '__VITE_GEMINI_API_URL__': os.environ.get('VITE_GEMINI_API_URL', 'https://asia-east1-teacher-c571b.cloudfunctions.net/generateExplanation').strip()
     }
 
     for file_path in files_to_process:
