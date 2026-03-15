@@ -1,0 +1,55 @@
+name: Deploy to Firebase
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Repo 🛰️
+        uses: actions/checkout@v4
+
+      - name: Set up Python 🐍
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Inject Secrets 🔑
+        run: python .github/inject.py
+        env:
+          VITE_GEMINI_API_URL: ${{ secrets.VITE_GEMINI_API_URL }}
+
+      - name: Security Scan 🛡️
+        run: |
+          python -c "
+          import os, re
+          pattern = re.compile(r'AIzaSy[0-9A-Za-z_-]{33}')
+          found = []
+          for root, dirs, files in os.walk('.'):
+              dirs[:] = [d for d in dirs if d not in ['.git','node_modules']]
+              for fname in files:
+                  if fname.endswith(('.html','.js','.json','.md','.py','.yml')):
+                      with open(os.path.join(root,fname), encoding='utf-8', errors='ignore') as f:
+                          for i, line in enumerate(f, 1):
+                              if pattern.search(line):
+                                  found.append(f'{root}/{fname}:{i}')
+          if found:
+              print('⚠️ 發現 API Key 殘留，終止部署：')
+              for x in found: print(' ', x)
+              exit(1)
+          else:
+              print('✅ 無殘留 API Key')
+          "
+
+      - name: Deploy to Firebase 🚀
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --only hosting,functions
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}

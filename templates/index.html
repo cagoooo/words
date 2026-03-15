@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>漢語新解</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>漢語新解</h1>
+                <div class="input-container">
+                    <form id="input-form">
+                <input type="text" id="input-word" placeholder="請輸入一個詞彙或是一段語句" required>
+                <button type="submit" id="generate-btn" class="generate-btn">還有什麼話語讓你困惑？讓我們繼續揭露這個世界的真相</button>
+            </form>
+            <div id="error" class="error"></div>
+        </div>
+        <div id="result" class="result-container"></div>
+    </div>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
