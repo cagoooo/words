@@ -1,7 +1,5 @@
 {
   "projects": {
     "default": "teacher-c571b"
-  },
-  "targets": {},
-  "etags": {}
+  }
 }
