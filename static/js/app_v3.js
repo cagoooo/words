@@ -206,7 +206,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Firebase Functions URL placeholder for injection
-    const API_URL = "__VITE_GEMINI_API_URL__";
+    let API_URL = "__VITE_GEMINI_API_URL__";
+
+    // Prevent relative path issues on GitHub Pages
+    if (API_URL === "__VITE_GEMINI_API_URL__" || API_URL.startsWith('/api')) {
+        API_URL = "https://asia-east1-teacher-c571b.cloudfunctions.net/generateExplanation";
+    }
 
     async function generateExplanation(word) {
         const currentUser = auth.currentUser;
