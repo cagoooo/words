@@ -190,6 +190,29 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const clonedContainer = clonedDoc.getElementById('result-container');
                     clonedContainer.style.boxShadow = 'none';
                     clonedContainer.style.border = 'none';
+
+                    // 強制讓所有動畫元素立即顯示（解決截圖時 opacity:0 問題）
+                    clonedDoc.querySelectorAll('.ink-spread').forEach(el => {
+                        el.style.opacity = '1';
+                        el.style.animation = 'none';
+                        el.style.filter = 'none';
+                        el.style.transform = 'none';
+                    });
+                    clonedDoc.querySelectorAll('.bento-block').forEach(el => {
+                        el.style.opacity = '1';
+                        el.style.transform = 'none';
+                        el.style.transition = 'none';
+                    });
+                    // 確保印章也完整顯示
+                    const sealEl = clonedDoc.getElementById('seal-element');
+                    if (sealEl) {
+                        sealEl.style.opacity = '0.8';
+                        sealEl.style.animation = 'none';
+                        sealEl.style.transform = 'rotate(-10deg) scale(1)';
+                    }
+                    // 隱藏分享按鈕
+                    const shareFab = clonedDoc.getElementById('share-btn');
+                    if (shareFab) shareFab.style.display = 'none';
                 }
             });
 
