@@ -1,8 +1,49 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // =============================================
+    // 🏫 Teacher App（代課代理管理系統）
+    // 只允許 Email/Password 正式登入的使用者存取
+    // words 和 prepare App 皆使用 Firebase Functions，
+    // 不直接存取 Firestore，無需額外規則。
+    // =============================================
+
+    // 教師資料
+    match /teachers/{teacherId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null;
+    }
+
+    // 請假單
+    match /leaveRecords/{recordId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.teacherId is string
+        && request.resource.data.leaveType is string;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null;
+    }
+
+    // 代課紀錄
+    match /substitutions/{subId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.substituteTeacherId is string
+        && request.resource.data.originalTeacherId is string;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null;
+    }
+
+    // =============================================
+    // 🔒 預設：拒絕所有未明確允許的存取
+    // =============================================
     match /{document=**} {
-      allow read, write: if request.auth != null;
+      allow read, write: if false;
     }
   }
 }
