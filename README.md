@@ -1,5 +1,7 @@
 # 漢語新解 (New Dictionary) - 詳細使用說明
 
+🌐 **線上使用：[漢語新解](https://cagoooo.github.io/words/)**
+
 本專案是一個基於 AI 的詞彙解釋工具，模仿「王爾德」、「魯迅」、「羅永浩」等風格，提供批判性、幽默且充滿隱喻的漢語新解。
 
 ## 🚀 快速開始
@@ -64,7 +66,7 @@ python main.py
 - Repository：`cagoooo/words`
 - 可見性：公開
 - 主要技術：Python、Firebase
-- 線上入口：未在 GitHub repository metadata 設定
+- 線上入口：<https://cagoooo.github.io/words/>
 
 ### 可以怎麼應用
 
