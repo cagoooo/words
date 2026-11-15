@@ -418,19 +418,33 @@ body {
 @keyframes inkReveal {
     0% {
         opacity: 0;
-        filter: url(#ink-spread-filter) blur(8px);
+        filter: url(#ink-spread-filter) blur(4px);
         transform: scale(0.98) translateY(5px);
     }
 
     50% {
         opacity: 0.8;
-        filter: url(#ink-spread-filter) blur(4px);
+        filter: url(#ink-spread-filter) blur(2px);
+    }
+
+    /* 2026-11-15：動畫結束一定要拿掉 SVG 墨跡濾鏡，否則暈開的墨跡會一直疊在字底下，字變糊 */
+    85% {
+        opacity: 1;
+        filter: blur(0);
     }
 
     100% {
         opacity: 1;
-        filter: url(#ink-spread-filter) blur(0);
+        filter: none;
         transform: scale(1) translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ink-spread {
+        animation: none;
+        opacity: 1;
+        filter: none;
     }
 }
 
