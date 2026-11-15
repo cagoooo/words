@@ -66,9 +66,12 @@ exports.generateExplanation = onRequest({
     try {
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.0-flash",
+            model: "gemini-2.5-flash-lite",
             systemInstruction: SYSTEM_PROMPT,
-            generationConfig: { responseMimeType: "application/json" }
+            generationConfig: {
+                responseMimeType: "application/json",
+                thinkingConfig: { thinkingBudget: 0 }
+            }
         });
 
         logger.info(`Requesting explanation for: ${inputWord}`);
