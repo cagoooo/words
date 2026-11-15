@@ -3,6 +3,13 @@ const { onRequest } = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const OpenCC = require("opencc-js");
+const { defineSecret } = require("firebase-functions/params");
+const { notifyGoogleChat, getClientIp, maskIp, truncate } = require("./notify-google-chat");
+
+// Google Chat 通知網址：每次有人使用 AI 都通知網站主人（放在 Secret Manager）
+const GOOGLE_CHAT_WEBHOOK_URL = defineSecret("GOOGLE_CHAT_WEBHOOK_URL");
+const SITE_NAME = "漢語新解";
+const FEATURE_NAME = "AI 詞語新解";
 
 // Basic Rate Limiting (In-memory, per instance)
 const rateLimit = new Map();
@@ -31,12 +38,29 @@ const cors = ["https://cagoooo.github.io"];
 
 exports.generateExplanation = onRequest({
     cors: cors,
-    secrets: ["GEMINI_API_KEY"]
+    secrets: ["GEMINI_API_KEY", GOOGLE_CHAT_WEBHOOK_URL]
 }, async (req, res) => {
     // Check for POST method
     if (req.method !== "POST") {
         return res.status(405).send({ error: "Method Not Allowed" });
     }
+
+    const startedAt = Date.now();
+    const clientIp = getClientIp(req);
+    // 沒有登入身分，通知只帶查詢詞語（前 20 字）與遮蔽末段的來源 IP
+    const report = (status, extra = {}) => notifyGoogleChat({
+        status,
+        siteName: SITE_NAME,
+        feature: FEATURE_NAME,
+        durationMs: Date.now() - startedAt,
+        ip: clientIp,
+        ...extra,
+        fields: [
+            { label: "查詢詞語", value: truncate((req.body && req.body.input) || "（空白）", 20) || "（空白）" },
+            { label: "來源 IP", value: maskIp(clientIp) },
+            ...(extra.fields || [])
+        ]
+    });
 
     // Basic Rate Limiting
     const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
@@ -46,20 +70,24 @@ exports.generateExplanation = onRequest({
 
     if (recentRequests.length >= MAX_REQUESTS) {
         logger.warn(`Rate limit exceeded for IP: ${ip}`);
+        // 被擋下也通知（同一 IP 每 5 分鐘最多 1 則）
+        await report("blocked", { fields: [{ label: "HTTP 狀態", value: "429（請求過於頻繁）" }] });
         return res.status(429).send({ error: "請求過於頻繁，請稍後再試（誠心方能得真相）。" });
     }
     recentRequests.push(now);
     rateLimit.set(ip, recentRequests);
 
     logger.info("Request Body:", req.body);
-    const inputWord = req.body.input || "";
+    const inputWord = (req.body && req.body.input) || "";
     if (!inputWord) {
+        await report("failed", { error: "未提供輸入" });
         return res.status(400).send({ error: "未提供輸入" });
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
         logger.error("GEMINI_API_KEY is not set in environment variables.");
+        await report("failed", { error: "伺服器配置錯誤（GEMINI_API_KEY 未設定）" });
         return res.status(500).send({ error: "伺服器配置錯誤" });
     }
 
@@ -89,6 +117,7 @@ exports.generateExplanation = onRequest({
         const bulletPoints = convertToBulletPoints(explanation);
 
         logger.info(`Generated for ${inputWord}: ${data.mood} (Model: Pro)`);
+        await report("success", { fields: [{ label: "情感色調", value: String(data.mood || "—") }] });
         res.status(200).send({
             explanation: bulletPoints,
             mood: data.mood
@@ -96,6 +125,7 @@ exports.generateExplanation = onRequest({
 
     } catch (error) {
         logger.error("Error generating content:", error);
+        await report("failed", { error: (error && error.message) || String(error) });
         res.status(500).send({ error: "AI 生成失敗，請稍後再試", detail: error.message });
     }
 });
