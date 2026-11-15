@@ -9,20 +9,26 @@ const firebaseConfig = {
 
 const app = firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
-const db = firebase.firestore();
 
-// --- Firebase Auth ---
-auth.signInAnonymously().catch((error) => {
-    console.error("Anonymous sign-in failing:", error);
-});
+// --- Firebase Auth：必須用 Google 帳號登入才能使用（匿名不算） ---
+const DAILY_LIMIT = 5;
+const TURNSTILE_SITE_KEY = '0x4AAAAAADIPhhdOK3_0FrkR';
+const TURNSTILE_ACTION = 'words_explain';
 
-auth.onAuthStateChanged((user) => {
-    if (user) {
-        console.log("User signed in anonymously:", user.uid);
-    } else {
-        console.log("User signed out");
-    }
-});
+function isGoogleUser(user) {
+    return !!(user && !user.isAnonymous &&
+        (user.providerData || []).some(p => p && p.providerId === 'google.com'));
+}
+
+function loginErrorMessage(error) {
+    const code = (error && error.code) || '';
+    if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') return '登入視窗已關閉，請再按一次「使用 Google 帳號登入」';
+    if (code === 'auth/popup-blocked') return '瀏覽器擋住了登入視窗，請允許本站開啟彈出式視窗後再試';
+    if (code === 'auth/network-request-failed') return '網路連線不穩，請確認網路後再登入';
+    if (code === 'auth/unauthorized-domain') return '此網址尚未被允許登入，請通知網站管理員';
+    if (code === 'auth/web-storage-unsupported' || code === 'auth/operation-not-supported-in-this-environment') return '這個瀏覽器不支援登入，請改用 Chrome 或 Safari 開啟';
+    return '登入失敗，請稍後再試';
+}
 
 
 /**
@@ -236,28 +242,130 @@ document.addEventListener('DOMContentLoaded', async () => {
         API_URL = "https://asia-east1-teacher-c571b.cloudfunctions.net/generateExplanation";
     }
 
-    async function generateExplanation(word) {
-        const currentUser = auth.currentUser;
-        const headers = { 'Content-Type': 'application/json' };
+    // --- 登入區塊 ---
+    const signedOutBox = document.getElementById('auth-signed-out');
+    const signedInBox = document.getElementById('auth-signed-in');
+    const loginBtn = document.getElementById('google-login-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    const userNameEl = document.getElementById('auth-user-name');
+    const quotaHint = document.getElementById('quota-hint');
+    const turnstileBox = document.getElementById('turnstile-box');
 
-        if (!currentUser) {
-            console.log("No user signed in, attempting anonymous sign-in...");
-            await auth.signInAnonymously();
+    let turnstileWidgetId = null;
+    let turnstileToken = '';
+
+    function updateQuotaHint(remaining) {
+        if (typeof remaining === 'number') {
+            quotaHint.textContent = `今日剩餘 ${remaining} / ${DAILY_LIMIT} 次`;
+        } else {
+            quotaHint.textContent = `每人每天 ${DAILY_LIMIT} 次`;
         }
+    }
 
+    function renderAuth(user) {
+        const ok = isGoogleUser(user);
+        signedOutBox.hidden = ok;
+        signedInBox.hidden = !ok;
+        if (ok) {
+            userNameEl.textContent = user.displayName || user.email || 'Google 使用者';
+            updateQuotaHint();
+            ensureTurnstile();
+        }
+    }
+
+    auth.onAuthStateChanged((user) => {
+        // 舊版留下的匿名身分不算登入：直接登出，避免殘留
+        if (user && user.isAnonymous) {
+            auth.signOut().catch(() => { });
+        }
+        renderAuth(user);
+    });
+
+    loginBtn.addEventListener('click', async () => {
+        loginBtn.disabled = true;
+        errorDiv.textContent = '';
+        try {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            provider.setCustomParameters({ prompt: 'select_account' });
+            await auth.signInWithPopup(provider);
+        } catch (error) {
+            console.error('Google sign-in failed:', error && error.code);
+            showError(loginErrorMessage(error));
+        } finally {
+            loginBtn.disabled = false;
+        }
+    });
+
+    logoutBtn.addEventListener('click', () => {
+        auth.signOut().catch(() => { });
+        errorDiv.textContent = '';
+    });
+
+    // --- Cloudflare Turnstile 人機驗證 ---
+    function ensureTurnstile(attempt = 0) {
+        if (turnstileWidgetId !== null) return;
+        if (!window.turnstile || !window.turnstile.render) {
+            if (attempt < 40) setTimeout(() => ensureTurnstile(attempt + 1), 250);
+            else showError('人機驗證載入失敗，請重新整理頁面');
+            return;
+        }
+        const narrow = turnstileBox.clientWidth > 0 && turnstileBox.clientWidth < 300;
+        turnstileWidgetId = window.turnstile.render(turnstileBox, {
+            sitekey: TURNSTILE_SITE_KEY,
+            action: TURNSTILE_ACTION,
+            language: 'zh-tw',
+            size: narrow ? 'compact' : 'normal',
+            callback: (token) => { turnstileToken = token; },
+            'expired-callback': () => { turnstileToken = ''; },
+            'error-callback': () => { turnstileToken = ''; }
+        });
+    }
+
+    function resetTurnstile() {
+        turnstileToken = '';
+        if (turnstileWidgetId !== null && window.turnstile) {
+            try { window.turnstile.reset(turnstileWidgetId); } catch (e) { }
+        }
+    }
+
+    function apiErrorMessage(status, result) {
+        if (status === 401) return (result && result.error) || '請先用 Google 帳號登入才能使用（每人每天 5 次）';
+        if (status === 403) return (result && result.error) || '人機驗證未通過，請重新驗證後再試';
+        if (status === 429) {
+            if (result && result.code === 'daily_limit') return `今天 ${DAILY_LIMIT} 次已用完，明天再來`;
+            return (result && result.error) || '請求過於頻繁，請稍後再試';
+        }
+        return (result && result.error) || '解析真相失敗，請稍後再試';
+    }
+
+    async function generateExplanation(word, idToken, token) {
         const response = await fetch(API_URL, {
             method: 'POST',
-            headers: headers,
-            body: JSON.stringify({ input: word })
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`
+            },
+            body: JSON.stringify({ input: word, turnstileToken: token })
         });
-
-        return response.json();
+        let result = {};
+        try { result = await response.json(); } catch (e) { }
+        return { status: response.status, ok: response.ok, result };
     }
 
     generateBtn.addEventListener('click', async () => {
         const inputWord = input.value.trim();
+        const currentUser = auth.currentUser;
+        if (!isGoogleUser(currentUser)) {
+            showError('🔒 請先用 Google 帳號登入才能使用（每人每天 5 次）');
+            return;
+        }
         if (!inputWord) {
             showError('請輸入一個漢語詞彙');
+            return;
+        }
+        if (!turnstileToken) {
+            ensureTurnstile();
+            showError('請先完成下方的人機驗證，再按「揭露真相」');
             return;
         }
 
@@ -268,32 +376,24 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         setLoading(true);
         errorDiv.textContent = '';
+        const tokenToSend = turnstileToken;
 
         try {
-            const result = await generateExplanation(inputWord);
-            if (result.explanation) {
+            const idToken = await currentUser.getIdToken();
+            const { status, ok, result } = await generateExplanation(inputWord, idToken, tokenToSend);
+            if (typeof result.remaining === 'number') updateQuotaHint(result.remaining);
+            if (status === 429 && result.code === 'daily_limit') updateQuotaHint(0);
+            if (ok && result.explanation) {
                 renderCard(inputWord, result.explanation, result.mood, true);
-
-                const currentUser = auth.currentUser;
-                if (currentUser) {
-                    db.collection('users').doc(currentUser.uid).collection('history').add({
-                        word: inputWord,
-                        explanation: result.explanation,
-                        mood: result.mood,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    }).then(() => {
-                        console.log("Successfully synced to Firestore");
-                    }).catch((err) => {
-                        console.error("Firestore sync error:", err);
-                    });
-                }
             } else {
-                showError(result.error || '解析真相失敗，請稍後再試');
+                showError(apiErrorMessage(status, result));
             }
         } catch (error) {
             console.error(error);
-            showError('網絡異常，連向真相的道路被阻斷了');
+            showError('網路異常，連向真相的道路被阻斷了，請稍後再試');
         } finally {
+            // Turnstile token 只能用一次：每次呼叫後都重新驗證
+            resetTurnstile();
             setLoading(false);
         }
     });
