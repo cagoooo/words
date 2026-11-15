@@ -4,10 +4,24 @@ const logger = require("firebase-functions/logger");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const OpenCC = require("opencc-js");
 const { defineSecret } = require("firebase-functions/params");
+const { initializeApp } = require("firebase-admin/app");
 const { notifyGoogleChat, getClientIp, maskIp, truncate } = require("./notify-google-chat");
+const {
+    DAILY_LIMIT,
+    GuardError,
+    requireGoogleUser,
+    verifyTurnstile,
+    consumeDailyQuota,
+    refundDailyQuota,
+    describeUser
+} = require("./words-guard");
+
+initializeApp();
 
 // Google Chat 通知網址：每次有人使用 AI 都通知網站主人（放在 Secret Manager）
 const GOOGLE_CHAT_WEBHOOK_URL = defineSecret("GOOGLE_CHAT_WEBHOOK_URL");
+// Cloudflare Turnstile secret（與 PIRLS 共用同一個 widget；放在 Secret Manager）
+const WORDS_TURNSTILE_SECRET = defineSecret("WORDS_TURNSTILE_SECRET");
 const SITE_NAME = "漢語新解";
 const FEATURE_NAME = "AI 詞語新解";
 
@@ -38,7 +52,7 @@ const cors = ["https://cagoooo.github.io"];
 
 exports.generateExplanation = onRequest({
     cors: cors,
-    secrets: ["GEMINI_API_KEY", GOOGLE_CHAT_WEBHOOK_URL]
+    secrets: ["GEMINI_API_KEY", GOOGLE_CHAT_WEBHOOK_URL, WORDS_TURNSTILE_SECRET]
 }, async (req, res) => {
     // Check for POST method
     if (req.method !== "POST") {
@@ -47,17 +61,21 @@ exports.generateExplanation = onRequest({
 
     const startedAt = Date.now();
     const clientIp = getClientIp(req);
-    // 沒有登入身分，通知只帶查詢詞語（前 20 字）與遮蔽末段的來源 IP
+    let user = null;
+    let quota = null;
+    // 通知卡：使用者名稱／Email、查詢詞語（前 20 字）、遮蔽末段的來源 IP、今日剩餘次數
     const report = (status, extra = {}) => notifyGoogleChat({
         status,
         siteName: SITE_NAME,
         feature: FEATURE_NAME,
         durationMs: Date.now() - startedAt,
         ip: clientIp,
+        user: describeUser(user) || undefined,
         ...extra,
         fields: [
             { label: "查詢詞語", value: truncate((req.body && req.body.input) || "（空白）", 20) || "（空白）" },
             { label: "來源 IP", value: maskIp(clientIp) },
+            ...(quota ? [{ label: "今日剩餘次數", value: `${quota.remaining} / ${DAILY_LIMIT}` }] : []),
             ...(extra.fields || [])
         ]
     });
@@ -77,16 +95,38 @@ exports.generateExplanation = onRequest({
     recentRequests.push(now);
     rateLimit.set(ip, recentRequests);
 
-    logger.info("Request Body:", req.body);
-    const inputWord = (req.body && req.body.input) || "";
-    if (!inputWord) {
-        await report("failed", { error: "未提供輸入" });
-        return res.status(400).send({ error: "未提供輸入" });
+    const inputWord = String((req.body && req.body.input) || "").trim();
+
+    // 三道防線：① Google 登入 → ② Turnstile 人機驗證 → ③ 每日次數（通過人機驗證才扣）
+    try {
+        user = await requireGoogleUser(req);
+        if (!inputWord) {
+            await report("failed", { error: "未提供輸入" });
+            return res.status(400).send({ error: "請輸入一個漢語詞彙" });
+        }
+        if (Array.from(inputWord).length > 50) {
+            await report("failed", { error: "輸入過長" });
+            return res.status(400).send({ error: "詞彙太長了，請輸入 50 字以內" });
+        }
+        await verifyTurnstile(req.body && req.body.turnstileToken, WORDS_TURNSTILE_SECRET.value(), clientIp);
+        quota = await consumeDailyQuota(user);
+    } catch (err) {
+        if (err instanceof GuardError) {
+            if (err.status === 429) quota = { remaining: 0 };
+            logger.warn(`generateExplanation blocked: ${err.status} ${err.extra && err.extra.code}`);
+            await report("blocked", { fields: [{ label: "HTTP 狀態", value: `${err.status}（${err.message}）` }] });
+            return res.status(err.status).send({ error: err.message, ...err.extra });
+        }
+        logger.error("Guard check failed:", err);
+        await report("failed", { error: (err && err.message) || String(err) });
+        return res.status(500).send({ error: "伺服器暫時無法處理，請稍後再試" });
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
         logger.error("GEMINI_API_KEY is not set in environment variables.");
+        await refundDailyQuota(user, quota.date);
+        quota.remaining += 1;
         await report("failed", { error: "伺服器配置錯誤（GEMINI_API_KEY 未設定）" });
         return res.status(500).send({ error: "伺服器配置錯誤" });
     }
@@ -102,11 +142,10 @@ exports.generateExplanation = onRequest({
             }
         });
 
-        logger.info(`Requesting explanation for: ${inputWord}`);
+        logger.info(`Requesting explanation (uid=${user.uid}, remaining=${quota.remaining})`);
         const result = await model.generateContent(`請解釋這個詞：「${inputWord}」`);
         const response = await result.response;
         const responseText = response.text();
-        logger.info(`Raw AI response: ${responseText}`);
         const data = JSON.parse(responseText);
 
         // Convert explanation to Traditional Chinese (Taiwan mapping)
@@ -116,17 +155,22 @@ exports.generateExplanation = onRequest({
         // Format to bullet points
         const bulletPoints = convertToBulletPoints(explanation);
 
-        logger.info(`Generated for ${inputWord}: ${data.mood} (Model: Pro)`);
+        logger.info(`Generated: ${data.mood}`);
         await report("success", { fields: [{ label: "情感色調", value: String(data.mood || "—") }] });
         res.status(200).send({
             explanation: bulletPoints,
-            mood: data.mood
+            mood: data.mood,
+            remaining: quota.remaining,
+            limit: DAILY_LIMIT
         });
 
     } catch (error) {
         logger.error("Error generating content:", error);
+        // AI 失敗不算次數：退回剛扣的那一次
+        await refundDailyQuota(user, quota.date);
+        quota.remaining += 1;
         await report("failed", { error: (error && error.message) || String(error) });
-        res.status(500).send({ error: "AI 生成失敗，請稍後再試", detail: error.message });
+        res.status(500).send({ error: "AI 生成失敗，請稍後再試（這次不扣次數）", remaining: quota.remaining, limit: DAILY_LIMIT });
     }
 });
 

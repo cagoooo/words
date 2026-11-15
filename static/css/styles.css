@@ -218,10 +218,97 @@ body {
 }
 
 .error-msg {
-    color: var(--accent);
+    color: var(--seal-red);
     margin-top: 12px;
     font-size: 0.9rem;
     min-height: 1.2rem;
+    line-height: 1.6;
+}
+
+/* 登入區塊（必須 Google 登入才能使用） */
+.auth-panel {
+    margin-bottom: 24px;
+    padding: 14px 16px;
+    border: 1px solid var(--border-color);
+    border-left: 4px solid var(--seal-red);
+    background: rgba(255, 255, 255, 0.55);
+}
+
+.auth-state {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 16px;
+}
+
+.auth-state[hidden] {
+    display: none;
+}
+
+.auth-lock-msg,
+.auth-user {
+    flex: 1 1 220px;
+    min-width: 0;
+    color: var(--text-main);
+    font-size: 0.98rem;
+    line-height: 1.6;
+}
+
+.auth-user {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+}
+
+.auth-user strong {
+    color: var(--ink-black);
+    overflow-wrap: anywhere;
+}
+
+.quota-hint {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.google-login-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px 18px;
+    min-height: 44px;
+    background: #fff;
+    color: var(--ink-black);
+    border: 1px solid var(--ink-black);
+    border-radius: 2px;
+    font-family: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.google-login-btn:hover {
+    background: #f3efe6;
+}
+
+.google-login-btn:disabled {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+.turnstile-box {
+    margin-top: 20px;
+    min-height: 65px;
+    display: flex;
+    justify-content: center;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.turnstile-box:empty {
+    min-height: 0;
+    margin-top: 0;
 }
 
 /* Traditional Scroll Layout */
@@ -540,6 +627,14 @@ footer {
 @media (max-width: 480px) {
     .glass-container {
         padding: 24px;
+    }
+
+    .google-login-btn {
+        width: 100%;
+    }
+
+    .auth-panel {
+        padding: 12px;
     }
 
     .premium-title {
