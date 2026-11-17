@@ -1,4 +1,4 @@
-const CACHE_NAME = 'words-cache-v5';
+const CACHE_NAME = 'words-cache-v6';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
