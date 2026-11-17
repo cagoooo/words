@@ -1,4 +1,5 @@
-const CACHE_NAME = 'words-cache-v6';
+const CACHE_PREFIX = 'words-cache-';
+const CACHE_NAME = CACHE_PREFIX + 'v7';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -39,7 +40,8 @@ self.addEventListener('activate', (event) => {
         caches.keys().then((cacheNames) => {
             return Promise.all(
                 cacheNames.map((cacheName) => {
-                    if (cacheName !== CACHE_NAME) {
+                    // 只清本工具的舊快取（words-cache- 開頭），同網域其他工具的快取不動
+                    if (cacheName.startsWith(CACHE_PREFIX) && cacheName !== CACHE_NAME) {
                         return caches.delete(cacheName);
                     }
                 })
