@@ -60,7 +60,9 @@ jobs:
       - name: Deploy to Firebase 🚀
         uses: w9jds/firebase-action@master
         with:
-          args: deploy --only hosting,functions
+          # 2026-11-18：teacher-c571b 是共用專案（代課代理管理系統的網站、備課小幫手與領域共備GO 的函式都在這裡）。
+          # 只能部署本工具自己的 generateExplanation；不可加 hosting（會蓋掉代課系統網站）、不可只寫 functions（會想刪掉別人的 7 支函式）、不可加 --force。
+          args: deploy --only functions:generateExplanation --project teacher-c571b --non-interactive
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
