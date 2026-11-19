@@ -1,5 +1,5 @@
 const CACHE_PREFIX = 'words-cache-';
-const CACHE_NAME = CACHE_PREFIX + 'v7';
+const CACHE_NAME = CACHE_PREFIX + 'v8';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
