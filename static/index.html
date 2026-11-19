@@ -116,7 +116,7 @@
                 <!-- 登入區塊：未登入顯示提示與登入按鈕；已登入顯示名稱與登出 -->
                 <div id="auth-panel" class="auth-panel" aria-live="polite">
                     <div id="auth-signed-out" class="auth-state">
-                        <p class="auth-lock-msg">🔒 請先用 Google 帳號登入才能使用（每人每天 5 次）</p>
+                        <p class="auth-lock-msg">🔒 請先用 Google 帳號登入才能使用（每人每天 3 次）</p>
                         <button id="google-login-btn" type="button" class="google-login-btn">
                             <svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true">
                                 <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z" />
@@ -130,7 +130,7 @@
                     <div id="auth-signed-in" class="auth-state" hidden>
                         <p class="auth-user">
                             <span>已登入：<strong id="auth-user-name"></strong></span>
-                            <span id="quota-hint" class="quota-hint">每人每天 5 次</span>
+                            <span id="quota-hint" class="quota-hint">每人每天 3 次</span>
                         </p>
                         <button id="logout-btn" type="button" class="text-btn">登出</button>
                     </div>
@@ -170,14 +170,14 @@
                     </div>
                 </div>
                 <ul class="footer-points">
-                    <li><span class="fp-icon" aria-hidden="true">🔒</span><div><strong>登入使用</strong><small>Google 帳號登入，每人每天 5 次</small></div></li>
+                    <li><span class="fp-icon" aria-hidden="true">🔒</span><div><strong>登入使用</strong><small>Google 帳號登入，每人每天 3 次</small></div></li>
                     <li><span class="fp-icon" aria-hidden="true">📜</span><div><strong>歷史長卷</strong><small>查過的詞存在這台裝置，隨時回顧</small></div></li>
                     <li><span class="fp-icon" aria-hidden="true">🖼️</span><div><strong>輸出畫卷</strong><small>結果一鍵存成圖片分享</small></div></li>
                 </ul>
                 <div class="footer-bottom">
                     <p class="site-credit">Made with <span class="site-credit__heart" aria-label="愛心">❤️</span> by
                         <a href="https://cagoooo.github.io/Akai/" target="_blank" rel="noopener noreferrer" title="阿凱老師教育科技創新專區" class="site-credit__author">阿凱老師</a><span class="footer-school"><span class="footer-dot" aria-hidden="true">・</span>桃園市龍潭區石門國民小學</span></p>
-                    <p class="footer-meta">© 2026 漢語新解<span class="version-tag">v1.1.2</span></p>
+                    <p class="footer-meta">© 2026 漢語新解<span class="version-tag">v1.1.3</span></p>
                 </div>
             </footer>
         </main>
@@ -234,7 +234,7 @@
         </div>
     </div>
 
-    <script src="js/app_v3.js?v=2026.11.17.1"></script>
+    <script src="js/app_v3.js?v=2026.11.19.1"></script>
     <script>
         // Service Worker Registration with Dev Isolation
         if ('serviceWorker' in navigator) {

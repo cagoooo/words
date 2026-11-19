@@ -11,7 +11,7 @@ const app = firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 
 // --- Firebase Auth：必須用 Google 帳號登入才能使用（匿名不算） ---
-const DAILY_LIMIT = 5;
+const DAILY_LIMIT = 3;
 const TURNSTILE_SITE_KEY = '0x4AAAAAADIPhhdOK3_0FrkR';
 const TURNSTILE_ACTION = 'words_explain';
 
@@ -329,7 +329,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function apiErrorMessage(status, result) {
-        if (status === 401) return (result && result.error) || '請先用 Google 帳號登入才能使用（每人每天 5 次）';
+        if (status === 401) return (result && result.error) || '請先用 Google 帳號登入才能使用（每人每天 3 次）';
         if (status === 403) return (result && result.error) || '人機驗證未通過，請重新驗證後再試';
         if (status === 429) {
             if (result && result.code === 'daily_limit') return `今天 ${DAILY_LIMIT} 次已用完，明天再來`;
@@ -356,7 +356,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const inputWord = input.value.trim();
         const currentUser = auth.currentUser;
         if (!isGoogleUser(currentUser)) {
-            showError('🔒 請先用 Google 帳號登入才能使用（每人每天 5 次）');
+            showError('🔒 請先用 Google 帳號登入才能使用（每人每天 3 次）');
             return;
         }
         if (!inputWord) {
